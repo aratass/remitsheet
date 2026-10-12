@@ -6,7 +6,7 @@ Remitsheet is a small, open-source payout tool for teams that pay many people at
 
 - **Live app:** https://aratass.github.io/remitsheet/ *(GitHub Pages, from the `docs/` folder)*
 - **Contract (Arc mainnet):** [`0x015153204C9A1cBAefB959782490db74cD1a7DF5`](https://explorer.arc.io/address/0x015153204C9A1cBAefB959782490db74cD1a7DF5)
-- **Example mainnet receipt:** *added after the first mainnet batch*
+- **Example mainnet receipt:** [batch on Arc mainnet, 12 Oct 2026](https://aratass.github.io/remitsheet/?tx=0xca6f87f27b3ea0b37e131143608ad471ce9e7cadeb8bcc6e67d901b68060e8e1&chain=5042) (deployment transaction: [`0xd824…7268`](https://explorer.arc.io/tx/0xd8244a7e07fba766ec2611acf51c133c925d42ce8d23a2d48043a48013157268))
 - **Walkthrough video (58 s, recorded on a local test chain):** [`submission/demo-local-chain.mp4`](submission/demo-local-chain.mp4)
 
 ![Remitsheet](submission/cover-1280x720.png)

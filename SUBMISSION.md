@@ -1,16 +1,16 @@
 # DoraHacks BUIDL submission: Arc Microgrants
 
-Copy each field into the BUIDL form at https://dorahacks.io/hackathon/arc-microgrants (button "Submit BUIDL"). Replace every `«…»` placeholder first; the owner steps say where each value comes from.
+Copy each field into the BUIDL form at https://dorahacks.io/hackathon/arc-microgrants (button "Submit BUIDL"). All links below are filled in (contract deployed and first mainnet batch paid on 12 Oct 2026).
 
 ## Program checklist (from the published rules)
 
 | Rule | How Remitsheet meets it |
 |---|---|
-| "Projects must be deployed and functional on the Arc Mainnet" | Contract deployed on Arc mainnet (chain 5042) and a real batch paid on mainnet (`«MAINNET_RECEIPT_URL»`) |
+| "Projects must be deployed and functional on the Arc Mainnet" | Contract deployed on Arc mainnet (chain 5042) and a real batch paid on mainnet (https://aratass.github.io/remitsheet/?tx=0xca6f87f27b3ea0b37e131143608ad471ce9e7cadeb8bcc6e67d901b68060e8e1&chain=5042) |
 | "The project must have a genuine Arc component" | Native USDC gas and payouts, EURC on Arc, Arc network config, Arc-specific decimals and blocklist handling |
 | "a deployable link and a public code repository" | `https://aratass.github.io/remitsheet/` and `https://github.com/aratass/remitsheet` |
 | "Each project can have only one submission" | One BUIDL |
-| "Applicants must have a compatible wallet to receive USDC on Arc" | Payout address `«ARC_WALLET_ADDRESS»` |
+| "Applicants must have a compatible wallet to receive USDC on Arc" | Payout address `0x014B4B400e7Ff5dB666af4e16e6C91b8443b24E6` |
 | "Projects already funded through a Circle or Arc program are not eligible" | Not funded by any program |
 
 ## Form fields
@@ -34,14 +34,14 @@ Payments, Stablecoins, Payroll, Developer tools, USDC, EURC, Arc
 - Live app: https://aratass.github.io/remitsheet/
 - GitHub: https://github.com/aratass/remitsheet
 - Contract on Arc mainnet: https://explorer.arc.io/address/0x015153204C9A1cBAefB959782490db74cD1a7DF5
-- Example mainnet receipt: «MAINNET_RECEIPT_URL» (the app link `https://aratass.github.io/remitsheet/?tx=0x…&chain=5042`)
-- Deployment transaction: «DEPLOY_TX_EXPLORER_URL»
+- Example mainnet receipt: https://aratass.github.io/remitsheet/?tx=0xca6f87f27b3ea0b37e131143608ad471ce9e7cadeb8bcc6e67d901b68060e8e1&chain=5042
+- Deployment transaction: https://explorer.arc.io/tx/0xd8244a7e07fba766ec2611acf51c133c925d42ce8d23a2d48043a48013157268
 
 **Team**
 Solo: Arminas Attas, software and data engineer.
 
 **Payout wallet (USDC on Arc)**
-«ARC_WALLET_ADDRESS»
+0x014B4B400e7Ff5dB666af4e16e6C91b8443b24E6
 
 **Is this project new?**
 Yes, built for this program in October 2026. It has not received funding from Circle, Arc or any other program.
@@ -106,8 +106,9 @@ The web app is static, with no backend, no accounts and no tracking, and it is t
 
 ### Screenshots to upload (1280 × 800)
 
-Taken by the end-to-end test on a local test chain; the network badge in them reads "Local test chain".
+The first one is the real Arc mainnet receipt (12 Oct 2026). The others were taken by the end-to-end test on a local test chain; the network badge in them reads "Local test chain".
 
+0. `submission/screenshots/00-mainnet-receipt.png`: the first mainnet batch, receipt rebuilt from Arc mainnet
 1. `submission/screenshots/04-review.png`: sheet checked, fee estimate, ready to pay
 2. `submission/screenshots/03-validation.png`: line-by-line validation
 3. `submission/screenshots/05-paid.png`: one transaction, every line paid
@@ -118,4 +119,3 @@ Taken by the end-to-end test on a local test chain; the network badge in them re
 
 Also available: `submission/receipt-example.pdf` (printed receipt), `submission/accounting-example.csv` (export).
 
-If there is time after the mainnet batch, a screenshot of the real mainnet receipt page is the strongest first image.
