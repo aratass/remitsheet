@@ -1,0 +1,7 @@
+node_modules/
+contracts/out/
+contracts/cache/
+broadcast/
+e2e/output/
+*.log
+.DS_Store

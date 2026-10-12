@@ -1,0 +1,24 @@
+{
+  "name": "remitsheet",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Pay a whole spreadsheet of people in USDC or EURC with one Arc transaction, with receipts and an accounting export.",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "contracts:build": "forge build",
+    "contracts:test": "forge test -vv",
+    "artifact": "node scripts/gen-artifact.mjs",
+    "build": "node web/build.mjs",
+    "typecheck": "tsc --noEmit -p web/tsconfig.json",
+    "test:unit": "node --test web/test/",
+    "test:e2e": "node e2e/run.mjs",
+    "serve": "node scripts/serve.mjs docs 4173"
+  },
+  "devDependencies": {
+    "esbuild": "0.25.12",
+    "playwright": "1.56.0",
+    "typescript": "5.9.3",
+    "viem": "2.38.6"
+  }
+}
