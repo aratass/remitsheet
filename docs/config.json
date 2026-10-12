@@ -1,0 +1,4 @@
+{
+  "_comment": "Optional per-chain overrides. Remitsheet is deployed with CREATE2, so its address is the same on every chain and normally nothing needs to change here.",
+  "chains": {}
+}

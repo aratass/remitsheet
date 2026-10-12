@@ -11,13 +11,16 @@
     "artifact": "node scripts/gen-artifact.mjs",
     "build": "node web/build.mjs",
     "typecheck": "tsc --noEmit -p web/tsconfig.json",
-    "test:unit": "node --test web/test/",
+    "test:unit": "tsx --test web/test/*.test.ts",
     "test:e2e": "node e2e/run.mjs",
-    "serve": "node scripts/serve.mjs docs 4173"
+    "serve": "node scripts/serve.mjs docs 4173",
+    "gas": "node scripts/gas-report.mjs",
+    "test": "forge test && npm run test:unit && npm run build && npm run test:e2e"
   },
   "devDependencies": {
     "esbuild": "0.25.12",
     "playwright": "1.56.0",
+    "tsx": "4.20.6",
     "typescript": "5.9.3",
     "viem": "2.38.6"
   }
