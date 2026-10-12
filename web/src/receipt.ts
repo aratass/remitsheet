@@ -5,9 +5,9 @@ import { parseSheet } from "./csv";
 import { decodeRef, escapeCsv, formatAmount, plainAmount, shortAddress, utcDate, utcTime } from "./format";
 import { centsToString, ecbUsdPerEur, eurAtParCents, eurPerUsd, usdToEurCents, type EcbRate } from "./fx";
 import { REMITSHEET_ABI } from "./generated/remitsheet";
-import { navigate } from "./main";
+import { navigate, openWalletPicker } from "./main";
 import { clear, copyText, download, extLink, h, icon, storageGet, storageSet, toast } from "./ui";
-import { onWalletChange } from "./wallet";
+import { onWalletChange, wallet } from "./wallet";
 
 type AssetInfo = { symbol: string; decimals: number; native: boolean; address: Hex };
 type Line = { index: number; to: Hex; amount: bigint; label: string };
@@ -151,7 +151,8 @@ export async function accountingCsv(data: ReceiptData, onlyTo?: string): Promise
       rate ? `${rate.source}; 1 USDC valued at 1 USD` : "unavailable", explorer,
     ]);
   }
-  const csv = [header, ...rows].map((r) => r.map((v) => escapeCsv(v)).join(",")).join("\r\n") + "\r\n";
+  // UTF-8 byte order mark so spreadsheet apps read accented names and labels correctly.
+  const csv = "\uFEFF" + [header, ...rows].map((r) => r.map((v) => escapeCsv(v)).join(",")).join("\r\n") + "\r\n";
   return { csv, rateError };
 }
 
@@ -193,7 +194,12 @@ export function renderReceipt(root: HTMLElement, params: URLSearchParams): () =>
               ? `No transaction ${shortAddress(hash)} was found on ${chain.label}. Check the hash and the network.`
               : `Could not read the transaction from ${chain.label}. If you use an ad or privacy blocker, allow ${new URL(chain.rpcUrl).host}, or connect your wallet on ${chain.label} and retry.`,
           ),
-          h("button", { class: "btn btn-secondary", onclick: () => void load() }, "Retry"),
+          h(
+            "div",
+            { class: "row-actions" },
+            h("button", { class: "btn btn-secondary", onclick: () => void load() }, "Retry"),
+            !notFound && !wallet.account ? h("button", { class: "btn btn-primary", onclick: () => openWalletPicker() }, "Connect wallet and retry") : null,
+          ),
         ),
       );
     }
@@ -344,7 +350,10 @@ export function renderReceipt(root: HTMLElement, params: URLSearchParams): () =>
   }
 
   void load();
-  const off = onWalletChange(() => undefined);
+  // If the public RPC was unreachable, reading through the wallet usually works: retry once it connects.
+  const off = onWalletChange(() => {
+    if (!data && wallet.chainId === chain.id) void load();
+  });
   return () => off();
 }
 

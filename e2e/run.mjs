@@ -5,7 +5,8 @@
 // Screenshots (1280x800) go to submission/screenshots/, other output to e2e/output/.
 //
 // Usage: npm run build && npm run test:e2e   (needs `anvil` on PATH or ANVIL=/path/to/anvil)
-import { spawn } from "node:child_process";
+// DEMO=1 runs the same flow slowly with captions and writes submission/demo-local-chain.mp4.
+import { execFileSync, spawn } from "node:child_process";
 import { mkdirSync, readFileSync, writeFileSync, rmSync } from "node:fs";
 import { chromium } from "playwright";
 import { createPublicClient, createWalletClient, getAddress, http, keccak256, slice, toHex } from "viem";
@@ -19,6 +20,7 @@ rmSync(out, { recursive: true, force: true });
 mkdirSync(out, { recursive: true });
 mkdirSync(shots, { recursive: true });
 
+const DEMO = !!process.env.DEMO;
 const RPC = "http://127.0.0.1:8545";
 const SITE = "http://127.0.0.1:4173";
 const PAYER = getAddress("0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266"); // Anvil dev account 0
@@ -60,7 +62,7 @@ check("Remitsheet not deployed before the test", (await pc.getCode({ address: de
 
 // ------------------------------------------------------------------ site + browser
 const server = await startServer(`${root}docs`, 4173);
-const browser = await chromium.launch();
+const browser = await chromium.launch({ slowMo: DEMO ? 90 : 0 });
 const context = await browser.newContext({
   viewport: { width: 1280, height: 800 },
   acceptDownloads: true,
@@ -103,6 +105,19 @@ await context.addInitScript(({ account }) => {
   window.addEventListener("eip6963:requestProvider", announce);
   announce();
 }, { account: PAYER });
+await context.addInitScript(() => {
+  window.__caption = (text) => {
+    let el = document.getElementById("__caption");
+    if (!el) {
+      el = document.createElement("div");
+      el.id = "__caption";
+      el.style.cssText = "position:fixed;left:50%;bottom:28px;transform:translateX(-50%);z-index:9999;max-width:1040px;padding:14px 22px;border-radius:14px;background:rgba(15,23,42,.92);color:#fff;font:600 21px/1.35 system-ui,sans-serif;box-shadow:0 10px 30px rgba(0,0,0,.25);text-align:center;pointer-events:none";
+      document.body.appendChild(el);
+    }
+    el.textContent = text;
+    el.style.display = text ? "block" : "none";
+  };
+});
 await context.route("**/config.json", (route) => route.fulfill({ json: { chains: { 31337: { eurc } } } }));
 let fxRequests = 0;
 await context.route("https://api.frankfurter.dev/**", (route) => {
@@ -119,11 +134,26 @@ page.on("requestfailed", (r) => {
   else pageErrors.push(`request failed: ${r.url()}`);
 });
 page.on("console", (m) => m.type() === "error" && !/ERR_TUNNEL_CONNECTION_FAILED|ERR_NAME_NOT_RESOLVED/.test(m.text()) && pageErrors.push(m.text()));
-const shot = (name) => page.screenshot({ path: `${shots}/${name}.png` });
+// Screenshots are taken without captions; captions and pauses only appear in DEMO mode.
+const shot = async (name) => {
+  if (DEMO) await page.evaluate(() => window.__caption(""));
+  await page.screenshot({ path: `${shots}/${name}.png` });
+};
+const say = async (text, ms = 2600) => {
+  if (!DEMO) return;
+  await page.evaluate((t) => window.__caption(t), text);
+  await page.waitForTimeout(ms);
+};
 
 try {
   // ---------------------------------------------------------------- 1. deploy
+  if (DEMO) {
+    await page.goto(`${SITE}/?dev=1`);
+    await say("Remitsheet: pay a whole spreadsheet in USDC or EURC with one Arc transaction", 3800);
+    await say("This walkthrough runs on a local test chain; the live app runs on Arc mainnet", 3200);
+  }
   await page.goto(`${SITE}/?dev=1#/deploy`);
+  await say("Deploy once: an ownerless contract, same address on every chain", 2800);
   await page.click("#connect-btn");
   await page.click("text=Test Wallet (local Anvil)");
   await page.waitForSelector("#deploy-btn");
@@ -131,6 +161,7 @@ try {
   await shot("01-deploy");
   await page.click("#deploy-btn");
   await page.waitForSelector("#deploy-live", { timeout: 30000 });
+  await say("Deployed, and the code hash is verified before the app uses it", 2600);
   await shot("02-deployed");
   const code = await pc.getCode({ address: deployment.address });
   check("contract deployed at the predicted CREATE2 address", keccak256(code) === deployment.runtimeCodeHash, deployment.address);
@@ -146,9 +177,11 @@ try {
     `${addr("r4")},12.1234567,Too precise`,
     `0x0000000000000000000000000000000000000000,5,Zero address`,
   ].join("\n");
+  await say("Paste or upload a CSV: address, amount, optional label", 2600);
   await page.fill("#sheet-input", bad);
   await page.waitForSelector(".chip-error");
   await page.evaluate(() => window.scrollTo(0, 560));
+  await say("Every line is checked: checksums, duplicates, decimals, zero amounts, zero address", 4200);
   await shot("03-validation");
   const errorRows = await page.locator("tr.bad:not(.msg-row)").count();
   check("validation flags bad lines", errorRows === 4, `${errorRows} error rows`);
@@ -166,8 +199,10 @@ try {
   await page.waitForFunction(() => /≈/.test(document.querySelector("#fee-estimate")?.textContent || ""));
   await page.evaluate(() => window.scrollTo(0, 560));
   await shot("04-review");
+  await say("Five contractors, 5,245.75 USDC. The network fee is shown in USDC before you sign", 3600);
   await page.click("#pay-btn");
   await page.waitForSelector("#pay-success", { timeout: 30000 });
+  await say("One transaction pays every line, or nothing moves", 3000);
   await shot("05-paid");
   for (const [a, amount] of usdcRows) {
     const bal = await pc.getBalance({ address: a });
@@ -179,6 +214,11 @@ try {
   // ---------------------------------------------------------------- 4. receipt, PDF, CSV
   await page.click("#open-receipt");
   await page.waitForSelector(".receipt-lines tbody tr");
+  await say("A receipt rebuilt from the chain: anyone with the link can verify it", 3400);
+  if (DEMO) {
+    await page.evaluate(() => window.scrollTo(0, 400));
+    await say("Prints to a one-page PDF", 2200);
+  }
   const receiptUrl = page.url();
   const txHash = new URL(receiptUrl).searchParams.get("tx");
   const rc = await pc.getTransactionReceipt({ hash: txHash });
@@ -190,11 +230,15 @@ try {
   await page.emulateMedia({ media: "print" });
   await page.pdf({ path: `${root}submission/receipt-example.pdf`, format: "A4", printBackground: true });
   await page.emulateMedia({ media: "screen" });
+  if (DEMO) await page.evaluate(() => window.scrollTo(0, 0));
   const [download] = await Promise.all([page.waitForEvent("download"), page.click("#export-btn")]);
+  await say("Accounting CSV with EUR values at the ECB reference rate of the day", 3400);
   const csvPath = `${out}/accounting.csv`;
   await download.saveAs(csvPath);
-  const csv = readFileSync(csvPath, "utf8").trim().split(/\r?\n/);
-  writeFileSync(`${root}submission/accounting-example.csv`, csv.join("\r\n") + "\r\n");
+  const csvRaw = readFileSync(csvPath, "utf8");
+  check("CSV starts with a UTF-8 byte order mark for spreadsheet apps", csvRaw.charCodeAt(0) === 0xfeff);
+  const csv = csvRaw.replace(/^\uFEFF/, "").trim().split(/\r?\n/);
+  writeFileSync(`${root}submission/accounting-example.csv`, csvRaw);
   check("CSV has header + 5 payments + 1 fee row", csv.length === 7, `${csv.length} lines`);
   check("CSV converts 1200 USDC at ECB 1.1206 to 1070.85 EUR", csv[1].includes(",1070.85,"), csv[1]);
   check("CSV names the rate source and date", csv[1].includes("2026-10-09") && csv[1].includes("ECB euro reference rate"));
@@ -205,11 +249,13 @@ try {
   await page.goto(`${receiptUrl}&to=${usdcRows[2][0]}`);
   await page.waitForSelector(".receipt-lines tbody tr");
   check("advice shows a single line", (await page.locator(".receipt-lines tbody tr").count()) === 1);
+  await say("Payment advice: send each person a link with only their line", 3000);
   await shot("07-advice");
 
   // ---------------------------------------------------------------- 6. EURC batch (approve + pay)
   await page.goto(`${SITE}/?dev=1`);
   await page.click("button.seg:has-text('EURC')");
+  await say("Euro payroll: EURC on Arc, with one approval of the exact total", 2800);
   const eurcRows = [
     [addr("eu1"), "900.00", "Studio Berlin · invoice 2026-118"],
     [addr("eu2"), "1350.00", "Lisbon Dev Lda · sprint 7"],
@@ -229,6 +275,7 @@ try {
   await page.click("#open-receipt");
   await page.waitForSelector(".receipt-lines tbody tr");
   await shot("08-eurc-receipt");
+  await say("Three EU contractors paid in EURC", 2600);
 
   // ---------------------------------------------------------------- 7. failing recipient is caught before sending
   await page.goto(`${SITE}/?dev=1`);
@@ -247,14 +294,24 @@ try {
   const before = await pc.getBalance({ address: addr("f1") });
   check("nothing was sent to the other lines", before === 0n);
   await shot("09-failing-line");
+  await say("A recipient that would reject the payment is caught before you sign", 3800);
+  if (DEMO) {
+    await page.goto(`${SITE}/?dev=1#/about`);
+    await say("Open source, no custody, no fees, no tracking. Built on Arc.", 3600);
+  }
 
   check("no page errors", pageErrors.length === 0, pageErrors.join(" | "));
   if (blockedHere.length) console.log(`info: ${blockedHere.length} request(s) to ${[...new Set(blockedHere)].join(", ")} were blocked by this test environment (expected)`);
 } finally {
   writeFileSync(`${out}/results.json`, JSON.stringify(results, null, 2));
+  const videoPath = await page.video()?.path();
   await context.close();
   await browser.close();
   server.close();
   anvil.kill();
+  if (DEMO && videoPath) {
+    execFileSync("ffmpeg", ["-y", "-loglevel", "error", "-i", videoPath, "-c:v", "libx264", "-pix_fmt", "yuv420p", "-crf", "24", "-movflags", "+faststart", `${root}submission/demo-local-chain.mp4`]);
+    console.log("wrote submission/demo-local-chain.mp4");
+  }
 }
 console.log(`\n${results.filter((r) => r.ok).length}/${results.length} checks passed`);

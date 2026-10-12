@@ -1,4 +1,4 @@
-import { CHAINS, type ChainConfig, type Hex } from "./config";
+import { type ChainConfig, type Hex } from "./config";
 
 export type Eip1193Provider = {
   request(args: { method: string; params?: unknown }): Promise<unknown>;
@@ -165,8 +165,4 @@ export async function switchTo(chain: ChainConfig): Promise<void> {
   }
   wallet.chainId = parseChainId(await wallet.provider.request({ method: "eth_chainId" }));
   emit();
-}
-
-export function walletChain(): ChainConfig | undefined {
-  return wallet.chainId != null ? CHAINS[wallet.chainId] : undefined;
 }
