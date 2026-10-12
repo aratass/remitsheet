@@ -217,7 +217,7 @@ try {
   await say("A receipt rebuilt from the chain: anyone with the link can verify it", 3400);
   if (DEMO) {
     await page.evaluate(() => window.scrollTo(0, 400));
-    await say("Prints to a one-page PDF", 2200);
+    await say("Prints cleanly to PDF", 2200);
   }
   const receiptUrl = page.url();
   const txHash = new URL(receiptUrl).searchParams.get("tx");

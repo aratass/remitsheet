@@ -19,7 +19,7 @@ Remitsheet is a small, open-source payout tool for teams that pay many people at
    - **EURC** goes through its ERC-20 contract: one approval of the exact total, then `payToken`.
    - Before the wallet is asked to sign, the batch is simulated. If a recipient would reject the payment (for example a contract without a receive function, or a restricted address), the failing line is highlighted and the Pay button stays disabled.
 3. **Keep the paperwork.**
-   - **Receipt page** (`?tx=0x…`): rebuilt from the transaction logs on every visit, so anyone with the link can check it. It shows the sender, time (UTC), reference, total, network fee and every line, and prints to a one-page A4 PDF.
+   - **Receipt page** (`?tx=0x…`): rebuilt from the transaction logs on every visit, so anyone with the link can check it. It shows the sender, time (UTC), reference, total, network fee and every line, and prints cleanly to an A4 PDF.
    - **Payment advice** (`?tx=0x…&to=0x…`): the same receipt, filtered to one recipient's line, to send to that person.
    - **Accounting CSV:** one row per payment plus one row for the network fee. Each row carries the EUR value at the ECB euro reference rate for the transaction date, with the rate, its date and its source in every row.
 

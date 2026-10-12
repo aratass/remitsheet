@@ -62,7 +62,7 @@ The batch is then simulated. If any recipient would reject the payment, the fail
 
 **2. Pay in one transaction.** On Arc, USDC is the native currency, so a USDC batch is a single wallet confirmation: up to 300 recipients, final as soon as it is included. EURC, Circle's euro stablecoin on Arc, is paid through its token contract: one approval of the exact total, then one batch. Either every line is paid or nothing moves. The contract has no owner, no fees and no upgrade path, and it never holds funds between transactions.
 
-**3. Keep the paperwork.** Every batch gets a receipt page rebuilt from the chain, so anyone with the link can verify it. It prints to a one-page PDF. Each recipient can be sent a payment advice link that shows only their own line. One click exports an accounting CSV: date and time in UTC, transaction hash, reference, recipient, label, amount, and the EUR value at the European Central Bank reference rate for that day, with the rate and its source in every row. Labels never go on-chain.
+**3. Keep the paperwork.** Every batch gets a receipt page rebuilt from the chain, so anyone with the link can verify it. It prints cleanly to PDF. Each recipient can be sent a payment advice link that shows only their own line. One click exports an accounting CSV: date and time in UTC, transaction hash, reference, recipient, label, amount, and the EUR value at the European Central Bank reference rate for that day, with the rate and its source in every row. Labels never go on-chain.
 
 **Why Arc.**
 - Gas is paid in USDC, so the payer needs nothing but the dollars being paid out. A 200-line batch costs about 0.05 to 0.15 USDC at the 20 gwei minimum base fee.
