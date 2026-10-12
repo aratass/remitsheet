@@ -5,3 +5,4 @@ broadcast/
 e2e/output/
 *.log
 .DS_Store
+cache/
